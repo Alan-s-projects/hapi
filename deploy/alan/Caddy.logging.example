@@ -4,9 +4,14 @@ format filter {
     fields {
         request>headers>Authorization delete
         request>headers>Cookie delete
+        request>headers>Referer delete
         request>uri query {
             delete token
             delete access_token
+            # Auth redirects can nest the original token-bearing URL in rd.
+            delete rd
+            delete code
+            delete state
         }
     }
 }

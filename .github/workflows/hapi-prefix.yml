@@ -5,6 +5,9 @@ on:
     branches: [codex/hapi-prefix]
 permissions:
   contents: read
+concurrency:
+  group: hapi-prefix-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   linux:
     runs-on: ubuntu-latest
