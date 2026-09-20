@@ -6,3 +6,17 @@
 **/*.log
 test-results
 playwright-report
+**/.hapi-gateway
+**/*-secrets
+**/authelia-data
+**/frp-runtime
+**/*-pki*
+**/*-backup*
+**/enrollment-notifications.txt
+**/HAPI-*.html
+**/*.key
+**/*.pem
+**/*.pfx
+**/*.p12
+**/*.tar
+**/__pycache__

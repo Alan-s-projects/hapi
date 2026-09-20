@@ -3,3 +3,27 @@ secrets/
 backups/
 *.local.*
 *.log
+# Never commit generated deployment state or credential-delivery artifacts.
+__pycache__/
+*.pyc
+runtime/
+frp-runtime/
+*-secrets/
+*-data/
+*-pki*/
+*-backup*/
+runner-state-archive/
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+*.tar
+*.tar.gz
+*.sqlite*
+*.db
+*.db-*
+users.yml
+configuration.yml
+enrollment-notifications.txt
+HAPI-*.html

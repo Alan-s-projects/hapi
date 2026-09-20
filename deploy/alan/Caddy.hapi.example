@@ -8,16 +8,33 @@ handle @hapi_auth {
 }
 @hapi_app path /hapi /hapi/*
 handle @hapi_app {
-    forward_auth hapi-authelia:9091 {
-        uri /api/authz/forward-auth
-        copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
-    }
-    reverse_proxy hapi-frps:13006 {
-        flush_interval -1
-        stream_timeout 1h
-        stream_close_delay 5m
+    route {
+        @gateway_session path /hapi/.gateway/session
+        handle @gateway_session {
+            header Cache-Control "no-store"
+            header X-Hapi-Gateway-Session "protected"
+            route {
+                forward_auth hapi-authelia:9091 {
+                    uri /api/authz/forward-auth
+                    header_up Accept "application/json"
+                }
+                respond 204
+            }
+        }
+        handle {
+            forward_auth hapi-authelia:9091 {
+                uri /api/authz/forward-auth
+            }
+            reverse_proxy hapi-frps:13006 {
+                header_up -Cookie
+                flush_interval -1
+                stream_timeout 1m
+                stream_close_delay 5s
+            }
+        }
     }
 }
+# Pair the WebSocket limit with HAPI_SSE_MAX_CONNECTION_SECONDS=60 on the hub.
 # Required before activation: redact Authorization, Cookie and token query
 # parameters in the site's access-log encoder, and verify MFA-expiry behavior
 # for fetch/SSE/WebSocket clients. This fragment is not a full site config.

@@ -9,11 +9,25 @@ authentication_backend:
     disable: true
   file:
     path: /config/users.yml
+# Password first, then any enrolled WebAuthn credential. Allow both device-bound
+# Windows Hello credentials and Apple/iCloud-synced passkeys. Do not enable the
+# experimental passkey-only two-factor policy.
+webauthn:
+  disable: false
+  enable_passkey_login: false
+  display_name: HAPI Gateway
+  attestation_conveyance_preference: none
+  filtering:
+    prohibit_backup_eligibility: false
+  selection_criteria:
+    attachment: ''
+    discoverability: preferred
+    user_verification: required
 access_control:
   default_policy: deny
   rules:
     - domain: example.com
-      resources: ['^/hapi(?:/.*)?$']
+      resources: ['^/hapi(?:/.*)?$', '^/xui(?:/.*)?$']
       policy: two_factor
       subject: ['group:owner']
 session:

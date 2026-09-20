@@ -1,8 +1,9 @@
 # Prefix-aware HAPI + Codex and private frp gateway
 
-Status: implementation candidate; NOT a completed public deployment. The tested
-browser URL layout is `/hapi/`. Native mobile companion apps are not certified
-for this fork or the additional browser MFA gateway.
+This deployment kit supports the `/hapi/` browser layout behind HTTPS/MFA.
+It contains reusable examples, not a particular machine's live configuration,
+account names, inventory or operational status. Native mobile companion apps
+are not certified for this fork or the additional browser MFA gateway.
 
 ## Routing contract
 
@@ -19,6 +20,19 @@ for this fork or the additional browser MFA gateway.
   deployment. A separate static frontend can select a different hub base URL.
 - Authenticated API responses are never service-worker cached. Old HAPI API
   caches are removed on worker activation; server-side chats are unaffected.
+- Build the optional gateway-session UI with
+  `VITE_GATEWAY_SESSION_PATH=/hapi/.gateway/session` (set by `build.mjs`).
+  The marked Caddy endpoint returns 204 for an authorized session and 401/403
+  otherwise. Direct hubs without the marker disable the check. The notice never
+  navigates automatically or retries an application write.
+- Set `HAPI_SSE_MAX_CONNECTION_SECONDS=60` on the public hub and pair it with
+  Caddy's one-minute WebSocket `stream_timeout`. Existing connections may retain
+  access for up to that bound after logout/expiry; every new request/reconnect
+  is authorized again. Reconnect cursors and terminal detach/resume are retained.
+- Authelia inactivity is request-based, so background polling may keep the idle
+  timer active; the separately configured one-hour absolute expiry remains.
+- HAPI strips all request-query values from its own access logs. Caddy's access
+  and runtime/error encoders must independently redact credentials too.
 
 ## Reusable Linux development container
 
@@ -128,6 +142,112 @@ after the owner is present. No enabled account exists during preparation.
 The filesystem notifier is for private, operator-assisted enrollment only.
 Confirm SMTP or a documented manual recovery procedure before public use;
 password-reset self-service is disabled. Notification files must remain private.
+
+### Owner account and multi-device WebAuthn enrollment
+
+For browser-first enrollment, run `prepare-browser-enrollment.py` on the gateway
+host as root before creating an enabled account. It only
+accepts the known disabled-bootstrap state, creates an owner with a random
+discarded password via Authelia, and moves the active users database to
+`/data/users.yml` so browser password changes can persist. It enables password
+reset/change and a 16-128 character policy. `/config`, `/run/secrets` and the root
+filesystem stay read-only. A failed startup rolls back the live configuration.
+The old disabled-bootstrap users file is retained but is no longer active.
+
+`Caddy.enrollment.example` opens only `/auth`; HAPI remains closed. Add the
+redaction filter from `Caddy.logging.example` to both the access log and the
+global default/error logger before issuing a reset link. Persist Caddy's extra
+private network in its Compose definition and connect it live without recreating
+the existing proxy. Validate and back up all configuration before a graceful
+reload; existing streaming connections may briefly reconnect.
+
+Until SMTP is configured, the public reset-start endpoint is deliberately closed.
+An operator can run `request-owner-reset.py --public-url https://your-domain/auth
+--username YOUR_USER --emit-private-link` through the trusted SSH channel. It
+asks Authelia's private API for a real, five-minute, single-use reset link and
+reads only the newly generated notification. Its stdout is sensitive: capture
+it directly into an owner-only local delivery artifact, never agent output,
+ordinary logs, a repository, a public folder, or chat. Do not visit the real link
+for testing, because the browser consumes it. The owner enters/submits the new
+password themselves. Browser password changes work after login; email-based
+recovery and enrollment verification remain operator-assisted until SMTP exists.
+
+The optional terminal-first alternative is retained below; do not run it again
+after browser-first account creation. It resolves the active database path and
+refuses to overwrite an existing account.
+
+`owner-setup.py` is an interactive, gateway-host helper (Python 3 + PyYAML).
+Install it root-owned outside any public web directory, then run it as the owner
+over a trusted SSH TTY: `sudo python3 /opt/hapi-gateway/owner-setup.py setup`.
+It prompts for a username (generic default `owner`) and uses the existing Authelia
+container's hidden password/confirmation prompts. Use a unique password of at
+least 16 characters. No plaintext password is passed in arguments or written to
+disk. The helper only replaces the known disabled bootstrap user; it refuses to
+overwrite any existing account. It backs up the old users file privately,
+validates configuration, and restarts/checks only Authelia, rolling back the user
+file if validation or startup fails. It does not enable public routes.
+
+`check` validates configuration and reports account counts without revealing
+hashes. `code` requires the owner's terminal and displays recent private
+filesystem-notifier messages after the browser requests registration. Never
+run `code` in an agent/logged session or share its output in chat. The placeholder
+email is only a notifier label, not a real delivery address; configure SMTP and
+a verified real email separately if desired.
+
+The example uses password-first authentication plus WebAuthn with required user
+verification, no platform-attachment restriction and synced credentials allowed.
+Register Windows Hello from Edge/Chrome and an Apple credential from Safari.
+Name them clearly, such as `Windows PC` and `Apple iCloud`. Apple devices sharing
+an Apple Account and iCloud Keychain can share the Apple credential. Test an
+independent login from the PC, iPhone and iPad before relying on synchronization.
+Either credential can be the second factor; both are not required per login.
+The experimental passkey-only two-factor option remains disabled.
+
+Keep at least two independently usable credentials and retain secure SSH/key
+recovery access. Self-service password reset stays disabled. Device loss/recovery
+is operator-assisted: use a remaining credential to add a replacement and revoke
+the lost credential; if all factors are lost, verify ownership through the
+existing private VM-administration channel before making any recovery change.
+The helper intentionally does not implement an automatic MFA bypass.
+
+Run the helper's non-mutating unit tests in the reusable Linux dev container:
+`docker exec hapi-dev python3 -B -m unittest discover -s /workspace/hapi/deploy/alan -p test_owner_setup.py`.
+
+### Dedicated container restart safety
+
+The deployment supervisor runs exactly one hub and one runner in its own PID
+namespace. At startup, `scripts/runnerState.mjs` checks the previous runner PID
+files before spawning any HAPI child. Old state/lock files are archived intact;
+an actually live `runner start-sync` process causes a safe refusal. This prevents
+PID reuse after container recreation from making the new hub look like the old
+runner. Credentials, history and resume-process records are not touched.
+
+Run its focused tests with:
+`docker exec hapi-dev node --test /workspace/hapi/deploy/alan/tests/runnerState.test.mjs`.
+
+For a consistent cutover backup, stop only the idle HAPI service and export both
+named volumes as tar archives before recreating it. Keep archive hashes, the old
+image ID and Compose configuration in owner-only storage. Verify that existing
+chats and workspace directories survive the cutover, check SQLite integrity,
+and confirm the runner recovers after another container restart.
+
+### Protecting an existing 3x-ui panel
+
+`Caddy.xui.example` gates only `/xui/*` and keeps the existing canonical redirect,
+native panel login and separate `/v2ray` route. Add the owner/two_factor resource
+to Authelia. The gateway cookie is masked before reaching the panel backend.
+Panel API/automation clients also need gateway authorization. This is not a
+software vulnerability fix. Review security updates separately and obtain the
+operator's approval before any disruptive maintenance or software upgrades.
+
+### Public-source boundary
+
+Keep runtime directories, private deployment notes, account databases, keys,
+certificates, notification messages, login-delivery HTML, logs and backups
+outside the repository. Use `example.com` and example account names in committed
+material. Never copy live secrets into tests, screenshots, build inputs or CI
+logs. Review the exact staged diff and commit identity before publishing; ignore
+rules are a secondary safeguard, not a substitute for a credential scan.
 
 `Caddy.hapi.example` and `Caddy.logging.example` are validated fragments, not an
 instruction to activate a site. Preserve existing Xray routes and Caddy volumes.

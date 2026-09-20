@@ -33,12 +33,21 @@ const visibilitySchema = z.object({
     visibility: z.enum(['visible', 'hidden'])
 })
 
+export function sseMaxConnectionMs(value: string | undefined): number {
+    if (!value || value === '0') return 0
+    if (!/^[1-9]\d*$/.test(value) || Number(value) > 3600) {
+        throw new Error('HAPI_SSE_MAX_CONNECTION_SECONDS must be an integer from 0 to 3600')
+    }
+    return Number(value) * 1000
+}
+
 export function createEventsRoutes(
     getSseManager: () => SSEManager | null,
     getSyncEngine: () => SyncEngine | null,
     getVisibilityTracker: () => VisibilityTracker | null
 ): Hono<WebAppEnv> {
     const app = new Hono<WebAppEnv>()
+    const maxConnectionMs = sseMaxConnectionMs(process.env.HAPI_SSE_MAX_CONNECTION_SECONDS)
 
     app.get('/events', (c) => {
         const manager = getSseManager()
@@ -110,6 +119,18 @@ export function createEventsRoutes(
                 }
             })
 
+            // Optional bounded reconnects let a reverse-proxy MFA gateway
+            // reauthorize streams after logout/expiry, including background
+            // clients that do not cooperate with the frontend session notice.
+            let finish: () => void = () => {}
+            const closed = new Promise<void>((resolve) => { finish = resolve })
+            c.req.raw.signal.addEventListener('abort', finish, { once: true })
+            stream.onAbort(finish)
+            const lifetime = maxConnectionMs > 0 ? setTimeout(() => {
+                stream.abort()
+                finish()
+            }, maxConnectionMs) : null
+
             try {
                 // Verdict first, replay second, live traffic third: the client
                 // decides whether to resync from the verdict, so it must never
@@ -130,12 +151,10 @@ export function createEventsRoutes(
                 }
                 await manager.drainPending(subscriptionId)
 
-                await new Promise<void>((resolve) => {
-                    const done = () => resolve()
-                    c.req.raw.signal.addEventListener('abort', done, { once: true })
-                    stream.onAbort(done)
-                })
+                if (!c.req.raw.signal.aborted) await closed
             } finally {
+                if (lifetime) clearTimeout(lifetime)
+                c.req.raw.signal.removeEventListener('abort', finish)
                 manager.unsubscribe(subscriptionId)
             }
         })

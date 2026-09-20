@@ -45,6 +45,7 @@ Dictation and voice-assistant provider keys can also be added from **Settings â†
 - `HAPI_LISTEN_PORT` - HTTP port (default: 3006).
 - `CORS_ORIGINS` - Comma-separated origins, or `*`.
 - `HAPI_HOME` - Data directory (default: ~/.hapi).
+- `HAPI_SSE_MAX_CONNECTION_SECONDS` - Optional SSE connection lifetime, 0 (default, disabled) to 3600 seconds. Set to 60 behind the MFA gateway so reconnects recheck authorization; replay cursors are preserved.
 - `DB_PATH` - SQLite database path (default: HAPI_HOME/hapi.db).
 - `TELEGRAM_NOTIFICATION` - Enable/disable Telegram notifications (default: true).
 - `HAPI_RELAY_API` - Relay API domain (default: relay.hapi.run).

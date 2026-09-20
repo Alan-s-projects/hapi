@@ -11,6 +11,7 @@ import { createAppRouter } from './router'
 import { I18nProvider } from './lib/i18n-context'
 import { restoreSpaRedirect } from './lib/spaRedirect'
 import { installScrollRestorationGuard } from './lib/scrollStorageGuard'
+import { GatewaySessionGuard } from './components/GatewaySessionGuard'
 
 function getStartParam(): string | null {
     const query = new URLSearchParams(window.location.search)
@@ -61,6 +62,7 @@ async function bootstrap() {
             <I18nProvider>
                 <QueryClientProvider client={queryClient}>
                     <RouterProvider router={router} />
+                    <GatewaySessionGuard path={import.meta.env.VITE_GATEWAY_SESSION_PATH} />
                     {import.meta.env.DEV ? <ReactQueryDevtools initialIsOpen={false} /> : null}
                 </QueryClientProvider>
             </I18nProvider>

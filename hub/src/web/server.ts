@@ -3,6 +3,7 @@ import { hubBasePath, routeBasePath } from './basePath'
 import { compress } from 'hono/compress'
 import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
+import { redactRequestLog } from './requestLog'
 import { join } from 'node:path'
 import { existsSync } from 'node:fs'
 import { serveStatic } from 'hono/bun'
@@ -232,7 +233,7 @@ function createWebApp(options: {
 }): Hono<WebAppEnv> {
     const app = new Hono<WebAppEnv>()
 
-    app.use('*', logger())
+    app.use('*', logger((message, ...rest) => console.log(redactRequestLog(message), ...rest.map(redactRequestLog))))
 
     const configuration = getConfiguration()
     const corsOrigins = options.corsOrigins ?? configuration.corsOrigins

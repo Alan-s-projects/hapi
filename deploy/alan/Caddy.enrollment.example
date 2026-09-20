@@ -1,0 +1,15 @@
+# Enrollment portal only; do not add a /hapi upstream until all launch gates pass.
+@hapi_auth path /auth /auth/*
+handle @hapi_auth {
+    header Referrer-Policy "no-referrer"
+    header Cache-Control "no-store"
+    route {
+        @hapi_auth_root path /auth
+        redir @hapi_auth_root /auth/ 308
+        # No SMTP yet. The operator issues reset links over the private network;
+        # public reset-start is closed to avoid flooding the private notifier.
+        @hapi_reset_start path /auth/api/reset-password/identity/start
+        respond @hapi_reset_start "Password setup and recovery links are issued privately by the operator until email delivery is configured." 403
+        reverse_proxy hapi-authelia:9091
+    }
+}

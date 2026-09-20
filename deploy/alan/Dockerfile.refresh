@@ -1,0 +1,8 @@
+# Local-only incremental build, after verifying this installed runtime image's
+# digest. The standalone, reproducible build remains deploy/alan/Dockerfile.
+FROM alan-codex-web:0.30.7-alan.1-candidate
+ARG REVISION=working-tree
+COPY --chmod=0755 deploy/alan/artifacts/hapi /usr/local/bin/hapi
+COPY deploy/alan/artifacts/build.json /opt/codex-web/build.json
+COPY --chown=node:node deploy/alan/scripts /opt/codex-web/scripts
+LABEL org.opencontainers.image.revision=$REVISION

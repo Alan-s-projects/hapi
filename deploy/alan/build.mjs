@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 const repo = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const nativeBuildRoot = process.env.HAPI_BUILD_DIR || '/test-state/build';
 const out = `${nativeBuildRoot}/bun-linux-x64-baseline`;
-const env = { ...process.env, VITE_BASE_URL: '/hapi/' };
+const env = { ...process.env, VITE_BASE_URL: '/hapi/', VITE_GATEWAY_SESSION_PATH: '/hapi/.gateway/session' };
 function run(args, cwd = repo) {
     const result = spawnSync('bun', args, { cwd, env, stdio: 'inherit' });
     if (result.status !== 0) throw new Error(`Build step failed: bun ${args.join(' ')}`);

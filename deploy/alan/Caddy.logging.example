@@ -5,6 +5,7 @@ format filter {
         request>headers>Authorization delete
         request>headers>Cookie delete
         request>headers>Referer delete
+        resp_headers>Set-Cookie delete
         request>uri query {
             delete token
             delete access_token

@@ -1,6 +1,6 @@
 # Alan's HAPI build tracking
 
-This fork tracks the proposed prefix-aware Docker build of HAPI. Upstream source
+This fork tracks the prefix-aware Docker build of HAPI. Upstream source
 and its AGPL-3.0 license are retained.
 
 ## Current status
@@ -10,11 +10,14 @@ and its AGPL-3.0 license are retained.
 - Working branch: `codex/hapi-prefix`
 - Starting release: `v0.30.7`
 - Starting commit: `0239edf38e2da653d662f31039e24ccea04c7837`
-- Existing deployment: unmodified HAPI 0.30.7 with official Codex CLI 0.155.1.
+- Runtime target: the prefix-aware fork of HAPI 0.30.7 with official Codex CLI 0.155.1.
 - Prefix support, regression tests, Docker build tooling, and gateway templates
-  are implemented on this branch. A local preview and private mutual-TLS frp
-  transport have been exercised. Public Caddy routing, owner MFA enrollment,
-  and production cutover are **not activated yet**.
+  are implemented on this branch, including mutual-TLS frp and HTTPS/MFA examples.
+- Gateway-expiry notices, bounded stream reconnects, request-log redaction and
+  container runner-state recovery are included with regression tests.
+- This repository contains reusable source and examples, not an operator's live
+  configuration, machine inventory, credentials or deployment status. Publishing
+  source does not automatically publish a container-registry release.
 
 Keep `main` aligned with upstream. Build and verify the prefix patch on this
 branch before replacing a running image. Do not claim a release is deployable

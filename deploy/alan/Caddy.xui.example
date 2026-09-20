@@ -1,0 +1,13 @@
+# Replace only the existing /xui/* handler. Keep the /xui -> /xui/ redirect
+# and the separate /v2ray handler unchanged. Add the matching owner/two_factor
+# access-control resource in Authelia before reloading this configuration.
+handle /xui/* {
+    forward_auth hapi-authelia:9091 {
+        uri /api/authz/forward-auth
+    }
+    reverse_proxy xui:2053 {
+        # Keep 3x-ui's own login/cookies, but do not disclose the gateway session
+        # token to the application behind it. No header-based SSO is introduced.
+        header_up Cookie "hapi_gateway_session=[^;]+" "hapi_gateway_session=_"
+    }
+}

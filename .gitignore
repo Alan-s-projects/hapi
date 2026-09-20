@@ -79,3 +79,8 @@ android/captures/
 # drop in their own) — never commit a real one. The committed placeholder is
 # android/app/google-services.json.example.
 android/app/google-services.json
+
+# Private gateway state and generated credential-delivery pages.
+**/.hapi-gateway/
+**/HAPI-Set-Password.html
+**/HAPI-Application-Login.html

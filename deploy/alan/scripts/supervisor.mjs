@@ -3,6 +3,7 @@ import { randomBytes } from 'node:crypto';
 import { mkdir, readFile, writeFile, chmod, access } from 'node:fs/promises';
 import { createInterface } from 'node:readline';
 import { refreshCatalog } from './catalog.mjs';
+import { quarantinePreviousRunnerState } from './runnerState.mjs';
 
 process.umask(0o077);
 const hapiHome = process.env.HAPI_HOME;
@@ -11,6 +12,8 @@ await mkdir(hapiHome, { recursive: true, mode: 0o700 });
 await mkdir(codexHome, { recursive: true, mode: 0o700 });
 await chmod(hapiHome, 0o700);
 await chmod(codexHome, 0o700);
+const archivedRunnerFiles = await quarantinePreviousRunnerState(hapiHome);
+if (archivedRunnerFiles) console.log(`Preserved ${archivedRunnerFiles} previous-container runner state files before startup.`);
 try {
   await access(`${codexHome}/config.toml`);
 } catch {
