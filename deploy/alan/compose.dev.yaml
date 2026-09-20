@@ -1,0 +1,58 @@
+name: hapi-dev
+services:
+  dev:
+    build:
+      context: ../..
+      dockerfile: deploy/alan/Dockerfile.dev
+    image: alan-hapi-dev:0.30.7
+    container_name: hapi-dev
+    init: true
+    working_dir: /workspace/hapi
+    ports:
+      - "127.0.0.1:3007:3006"
+    volumes:
+      - ../..:/workspace/hapi
+      - root-modules:/workspace/hapi/node_modules
+      - cli-modules:/workspace/hapi/cli/node_modules
+      - web-modules:/workspace/hapi/web/node_modules
+      - hub-modules:/workspace/hapi/hub/node_modules
+      - shared-modules:/workspace/hapi/shared/node_modules
+      - relay-modules:/workspace/hapi/relay/node_modules
+      - docs-modules:/workspace/hapi/docs/node_modules
+      - website-modules:/workspace/hapi/website/node_modules
+      - test-state:/test-state
+    environment:
+      HAPI_HOME: /test-state/hapi
+      CODEX_HOME: /test-state/codex
+      HAPI_PUBLIC_URL: http://localhost:3007/hapi
+      HAPI_API_URL: http://127.0.0.1:3006/hapi
+      HAPI_LISTEN_HOST: 0.0.0.0
+      HAPI_LISTEN_PORT: "3006"
+      HAPI_RUNNER_SUPERVISED: "1"
+      HAPI_DISABLE_VERSION_HANDOFF: "1"
+      HAPI_BASE_PATH: /hapi
+      VITE_BASE_URL: /hapi/
+      HAPI_ANDROID_PUSH: "off"
+      HAPI_IOS_PUSH: "off"
+    networks:
+      - copilot
+    cap_drop: [ALL]
+    # Only root initialization uses this to assign new dependency volumes to node.
+    cap_add: [CHOWN]
+    security_opt:
+      - no-new-privileges:true
+      - seccomp=./seccomp/codex-bwrap.json
+volumes:
+  root-modules:
+  cli-modules:
+  web-modules:
+  hub-modules:
+  shared-modules:
+  relay-modules:
+  docs-modules:
+  website-modules:
+  test-state:
+networks:
+  copilot:
+    external: true
+    name: copilot-bridge_default

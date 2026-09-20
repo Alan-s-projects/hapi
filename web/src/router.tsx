@@ -1,3 +1,4 @@
+import { appBasePath, appPathname } from '@/lib/basePath'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import {
@@ -158,7 +159,7 @@ function SettingsIcon(props: { className?: string }) {
 function SessionsPage() {
     const { api, baseUrl, titleSuggestionAvailable = false } = useAppContext()
     const navigate = useNavigate()
-    const pathname = useLocation({ select: location => location.pathname })
+    const pathname = useLocation({ select: location => appPathname(location.pathname) })
     const matchRoute = useMatchRoute()
     const { t } = useTranslation()
     const { addToast } = useToast()
@@ -840,7 +841,7 @@ function SessionPage() {
 
 function SessionDetailRoute() {
     const { api } = useAppContext()
-    const pathname = useLocation({ select: location => location.pathname })
+    const pathname = useLocation({ select: location => appPathname(location.pathname) })
     const { sessionId } = useParams({ from: '/sessions/$sessionId' })
     const navigate = useNavigate()
     const { session, notFound: sessionNotFound } = useSession(api, sessionId)
@@ -1298,6 +1299,7 @@ type RouterHistory = Parameters<typeof createRouter>[0]['history']
 export function createAppRouter(history?: RouterHistory) {
     return createRouter({
         routeTree,
+        basepath: appBasePath || '/',
         history,
         scrollRestoration: true,
         getScrollRestorationKey,

@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 import { precacheAndRoute } from 'workbox-precaching'
 import { registerRoute } from 'workbox-routing'
-import { CacheFirst, NetworkFirst } from 'workbox-strategies'
+import { CacheFirst } from 'workbox-strategies'
 import { ExpirationPlugin } from 'workbox-expiration'
 import {
     cleanupExpiredShareTransfers,
@@ -9,6 +9,7 @@ import {
     putShareTransfer,
 } from './lib/shareTransfer'
 import { shareTargetPathname } from './lib/sharePath'
+import { appPath } from './lib/basePath'
 
 const sharePath = shareTargetPathname()
 
@@ -31,47 +32,7 @@ type PushPayload = {
 
 precacheAndRoute(self.__WB_MANIFEST)
 
-registerRoute(
-    ({ url }) => url.pathname === '/api/sessions',
-    new NetworkFirst({
-        cacheName: 'api-sessions',
-        networkTimeoutSeconds: 10,
-        plugins: [
-            new ExpirationPlugin({
-                maxEntries: 10,
-                maxAgeSeconds: 60 * 5
-            })
-        ]
-    })
-)
-
-registerRoute(
-    ({ url }) => /^\/api\/sessions\/[^/]+$/.test(url.pathname),
-    new NetworkFirst({
-        cacheName: 'api-session-detail',
-        networkTimeoutSeconds: 10,
-        plugins: [
-            new ExpirationPlugin({
-                maxEntries: 20,
-                maxAgeSeconds: 60 * 5
-            })
-        ]
-    })
-)
-
-registerRoute(
-    ({ url }) => url.pathname === '/api/machines',
-    new NetworkFirst({
-        cacheName: 'api-machines',
-        networkTimeoutSeconds: 10,
-        plugins: [
-            new ExpirationPlugin({
-                maxEntries: 5,
-                maxAgeSeconds: 60 * 10
-            })
-        ]
-    })
-)
+// Authenticated API responses must not be cached across identities or MFA expiry.
 
 registerRoute(
     /^https:\/\/cdn\.socket\.io\/.*/,
@@ -106,7 +67,10 @@ self.addEventListener('message', (event) => {
 })
 
 self.addEventListener('activate', (event) => {
-    event.waitUntil(self.clients.claim())
+    event.waitUntil(Promise.all([
+        ...['api-sessions', 'api-session-detail', 'api-machines'].map(name => caches.delete(name)),
+        self.clients.claim(),
+    ]))
 })
 
 self.addEventListener('push', (event) => {
@@ -117,8 +81,8 @@ self.addEventListener('push', (event) => {
 
     const title = payload.title || 'HAPI'
     const body = payload.body ?? ''
-    const icon = payload.icon ?? '/pwa-192x192.png'
-    const badge = payload.badge ?? '/pwa-64x64.png'
+    const icon = appPath(payload.icon ?? '/pwa-192x192.png')
+    const badge = appPath(payload.badge ?? '/pwa-64x64.png')
     const data = payload.data
     const tag = payload.tag
 
@@ -136,7 +100,7 @@ self.addEventListener('push', (event) => {
 self.addEventListener('notificationclick', (event) => {
     event.notification.close()
     const data = event.notification.data as { url?: string } | undefined
-    const url = data?.url ?? '/'
+    const url = appPath(data?.url ?? '/')
     event.waitUntil(self.clients.openWindow(url))
 })
 

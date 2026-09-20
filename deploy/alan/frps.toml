@@ -1,0 +1,19 @@
+bindAddr = "0.0.0.0"
+bindPort = 7000
+# This address is inside a private Docker network; 13006 is NOT host-published.
+proxyBindAddr = "0.0.0.0"
+allowPorts = [{ single = 13006 }]
+maxPortsPerClient = 1
+
+auth.method = "token"
+auth.tokenSource.type = "file"
+auth.tokenSource.file.path = "/run/secrets/tunnel-token"
+auth.additionalScopes = ["HeartBeats", "NewWorkConns"]
+
+transport.tls.force = true
+transport.tls.certFile = "/run/secrets/server.crt"
+transport.tls.keyFile = "/run/secrets/server.key"
+transport.tls.trustedCaFile = "/run/secrets/ca.crt"
+log.to = "console"
+log.level = "info"
+# Deliberately no webServer/dashboard, vhost ports, KCP, QUIC or SSH gateway.

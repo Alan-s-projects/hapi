@@ -1,0 +1,7 @@
+# Minimal configuration: do not inherit workstation OpenSSL extension defaults.
+[req]
+distinguished_name = dn
+prompt = no
+
+[dn]
+CN = overridden-by-subject

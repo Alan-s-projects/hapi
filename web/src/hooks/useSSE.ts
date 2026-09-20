@@ -1,3 +1,4 @@
+import { hubUrl } from '@hapi/protocol/url'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import {
@@ -211,7 +212,7 @@ function getVisibilityState(): VisibilityState {
     return document.visibilityState === 'visible' ? 'visible' : 'hidden'
 }
 
-function buildEventsUrl(
+export function buildEventsUrl(
     baseUrl: string,
     token: string,
     subscription: SSESubscription,
@@ -236,7 +237,7 @@ function buildEventsUrl(
 
     const path = `/api/events?${params.toString()}`
     try {
-        return new URL(path, baseUrl).toString()
+        return hubUrl(baseUrl, path)
     } catch {
         return path
     }

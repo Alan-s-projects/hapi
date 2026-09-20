@@ -1,0 +1,25 @@
+serverAddr = "example.com"
+serverPort = 7000
+loginFailExit = false
+
+auth.method = "token"
+auth.tokenSource.type = "file"
+auth.tokenSource.file.path = "/run/secrets/tunnel-token"
+auth.additionalScopes = ["HeartBeats", "NewWorkConns"]
+
+transport.tls.enable = true
+transport.tls.trustedCaFile = "/run/secrets/ca.crt"
+transport.tls.serverName = "example.com"
+transport.tls.certFile = "/run/secrets/client.crt"
+transport.tls.keyFile = "/run/secrets/client.key"
+transport.tls.disableCustomTLSFirstByte = true
+
+log.to = "console"
+log.level = "info"
+
+[[proxies]]
+name = "hapi"
+type = "tcp"
+localIP = "codex-web"
+localPort = 3006
+remotePort = 13006

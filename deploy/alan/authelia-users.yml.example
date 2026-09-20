@@ -1,0 +1,10 @@
+# Authelia requires one schema-valid entry. Generate a fresh digest of a random,
+# discarded password for this DISABLED, unprivileged bootstrap entry. Never
+# enable it; replace it with the owner's separately enrolled account.
+users:
+  pending_enrollment:
+    disabled: true
+    displayname: Pending owner enrollment
+    password: '__DISABLED_RANDOM_DIGEST__'
+    email: pending@example.invalid
+    groups: []

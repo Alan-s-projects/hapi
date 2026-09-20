@@ -1,0 +1,29 @@
+services:
+  authelia:
+    image: ghcr.io/authelia/authelia:4.39.28@sha256:bd97cff4fcbf715b5ff1f9ae286afbe6033afce385302520b0368122d43a6f54
+    container_name: hapi-authelia
+    restart: unless-stopped
+    user: "1000:1000"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 256m
+    cpus: 0.5
+    pids_limit: 128
+    volumes:
+      - ./authelia:/config:ro
+      - ./authelia-secrets:/run/secrets:ro
+      - ./authelia-data:/data
+      # Authelia writes this startup-generated probe configuration even when
+      # its application/configuration filesystem is otherwise read-only.
+      - ./authelia-health.env:/app/.healthcheck.env
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m
+    environment:
+      AUTHELIA_SESSION_SECRET_FILE: /run/secrets/session
+      AUTHELIA_STORAGE_ENCRYPTION_KEY_FILE: /run/secrets/storage
+      AUTHELIA_IDENTITY_VALIDATION_RESET_PASSWORD_JWT_SECRET_FILE: /run/secrets/reset-jwt
+    networks: [front]
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }

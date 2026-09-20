@@ -1,4 +1,5 @@
 import type { ParsedLocation } from '@tanstack/react-router'
+import { appPathname } from './basePath'
 
 const FILE_ROUTE = /^\/sessions\/[^/]+\/file$/
 const FILES_ROUTE = /^\/sessions\/[^/]+\/files$/
@@ -17,20 +18,21 @@ const FILES_ROUTE = /^\/sessions\/[^/]+\/files$/
  * scroll positions are still remembered.
  */
 export function getScrollRestorationKey(location: ParsedLocation): string {
+    const pathname = appPathname(location.pathname)
     const search = location.search as {
         path?: unknown
         staged?: unknown
         tab?: unknown
         machineId?: unknown
     }
-    if (FILE_ROUTE.test(location.pathname) && typeof search.path === 'string') {
+    if (FILE_ROUTE.test(pathname) && typeof search.path === 'string') {
         const stagedSuffix = search.staged === true ? '&staged=true' : ''
         return `${location.pathname}?path=${search.path}${stagedSuffix}`
     }
-    if (FILES_ROUTE.test(location.pathname) && search.tab === 'directories') {
+    if (FILES_ROUTE.test(pathname) && search.tab === 'directories') {
         return `${location.pathname}?tab=directories`
     }
-    if (location.pathname === '/browse' && typeof search.machineId === 'string') {
+    if (pathname === '/browse' && typeof search.machineId === 'string') {
         return `${location.pathname}?machineId=${search.machineId}`
     }
     return location.pathname

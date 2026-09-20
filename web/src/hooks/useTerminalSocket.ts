@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Manager, type Socket } from 'socket.io-client'
+import { socketEndpoint } from '@hapi/protocol/url'
 
 type TerminalConnectionState =
     | { status: 'idle' }
@@ -116,8 +117,9 @@ export function useTerminalSocket(options: UseTerminalSocketOptions): {
             return
         }
 
-        const manager = new Manager(baseUrlRef.current, {
-            path: '/socket.io/',
+        const endpoint = socketEndpoint(baseUrlRef.current)
+        const manager = new Manager(endpoint.origin, {
+            path: endpoint.path,
             reconnection: true,
             reconnectionAttempts: Infinity,
             reconnectionDelay: 1000,

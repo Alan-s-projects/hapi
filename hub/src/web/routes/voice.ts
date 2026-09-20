@@ -1,4 +1,5 @@
 import { Hono } from 'hono'
+import { hubUrl } from '@hapi/protocol/url'
 import { bodyLimit } from 'hono/body-limit'
 import { z } from 'zod'
 import type { WebAppEnv } from '../middleware/auth'
@@ -24,10 +25,9 @@ import {
 } from '../../config/providerCredentials'
 import { getConfiguration } from '../../configuration'
 
-function buildVoiceWsUrl(base: string, pathname: string): string {
-    const url = new URL(base)
+export function buildVoiceWsUrl(base: string, pathname: string): string {
+    const url = new URL(hubUrl(base, pathname))
     url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:'
-    url.pathname = pathname
     url.search = ''
     url.hash = ''
     return url.toString()

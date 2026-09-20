@@ -1,0 +1,36 @@
+# BOOTSTRAP ONLY: no accounts are enabled. Do not activate public HAPI before
+# owner enrollment, recovery-policy confirmation and the public E2E checks.
+server:
+  address: 'tcp://:9091/auth'
+log:
+  level: info
+authentication_backend:
+  password_reset:
+    disable: true
+  file:
+    path: /config/users.yml
+access_control:
+  default_policy: deny
+  rules:
+    - domain: example.com
+      resources: ['^/hapi(?:/.*)?$']
+      policy: two_factor
+      subject: ['group:owner']
+session:
+  name: hapi_gateway_session
+  same_site: lax
+  inactivity: 15m
+  expiration: 1h
+  remember_me: -1
+  cookies:
+    - domain: example.com
+      authelia_url: https://example.com/auth/
+      default_redirection_url: https://example.com/hapi/
+storage:
+  local:
+    path: /data/db.sqlite3
+# Private, operator-assisted enrollment only. Decide SMTP/recovery with the
+# owner before public launch; never expose this notification file via HTTP.
+notifier:
+  filesystem:
+    filename: /data/enrollment-notifications.txt

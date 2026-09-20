@@ -1,3 +1,4 @@
+import { appPath } from '@/lib/basePath'
 import '@assistant-ui/react-markdown/styles/dot.css'
 
 import type { ComponentPropsWithoutRef, ComponentType, MouseEvent, ReactNode } from 'react'
@@ -512,7 +513,7 @@ function FilePathAnchor(props: ComponentPropsWithoutRef<'a'> & { filePath: strin
     const navigate = useNavigate()
     const rel = anchorProps.target === '_blank' ? (anchorProps.rel ?? 'noreferrer') : anchorProps.rel
     const search = new URLSearchParams({ path: encodeBase64(filePath), origin: 'chat' }).toString()
-    const href = `/sessions/${encodeURIComponent(sessionId)}/file?${search}`
+    const href = appPath(`/sessions/${encodeURIComponent(sessionId)}/file?${search}`)
 
     const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
         anchorProps.onClick?.(event)

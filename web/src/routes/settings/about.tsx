@@ -7,6 +7,9 @@ export default function SettingsAboutPage() {
     return (
         <SettingsPageContent description={t('settings.about.description')}>
             <SettingsSection>
+                <SettingsRow label="Alan /hapi build" trailing={
+                    <a href="https://github.com/Alan-s-projects/hapi/tree/codex/hapi-prefix" target="_blank" rel="noopener noreferrer" className="text-[var(--app-link)] hover:underline">Source code</a>
+                } />
                 <SettingsRow label={t('settings.about.website')} trailing={
                     <a href="https://hapi.run" target="_blank" rel="noopener noreferrer" className="text-[var(--app-link)] hover:underline">hapi.run</a>
                 } />

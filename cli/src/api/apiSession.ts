@@ -2,6 +2,7 @@ type QueueCancelResult = boolean | 'in-flight' | 'indeterminate' | 'consumed'
 import { EventEmitter } from 'node:events'
 import { randomUUID } from 'node:crypto'
 import { io, type Socket } from 'socket.io-client'
+import { socketEndpoint } from '@hapi/protocol/url'
 import axios from 'axios'
 import type { ZodType } from 'zod'
 import { logger } from '@/ui/logger'
@@ -303,13 +304,14 @@ export class ApiSessionClient extends EventEmitter {
             registerCommonHandlers(this.rpcHandlerManager, this.metadata.path)
         }
 
-        this.socket = io(`${configuration.apiUrl}/cli`, {
+        const endpoint = socketEndpoint(configuration.apiUrl)
+        this.socket = io(`${endpoint.origin}/cli`, {
             auth: {
                 token: this.token,
                 clientType: 'session-scoped' as const,
                 sessionId: this.sessionId
             },
-            path: '/socket.io/',
+            path: endpoint.path,
             reconnection: true,
             reconnectionAttempts: Infinity,
             reconnectionDelay: 1000,

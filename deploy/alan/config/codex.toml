@@ -1,0 +1,21 @@
+model = "gpt-6-astra"
+model_reasoning_effort = "max"
+model_provider = "bridge"
+model_catalog_json = "/home/node/.codex/copilot-bridge-models.json"
+model_context_window = 1050000
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+# Bridge does not implement Codex's standalone /v1/alpha/search endpoint.
+web_search = "disabled"
+
+[model_providers.bridge]
+name = "Copilot Bridge"
+base_url = "http://bridge:4142/v1"
+wire_api = "responses"
+requires_openai_auth = false
+
+[projects."/workspace"]
+trust_level = "trusted"
+
+[sandbox_workspace_write]
+network_access = true

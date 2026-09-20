@@ -1,4 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
+import { normalizeHubUrl } from '@hapi/protocol/url'
+import { appBasePath } from '@/lib/basePath'
 
 const HUB_URL_KEY = 'hapi_hub_url'
 
@@ -23,7 +25,11 @@ export function normalizeServerUrl(input: string): ServerUrlResult {
         return { ok: false, error: 'Hub URL must start with http:// or https://' }
     }
 
-    return { ok: true, value: parsed.origin }
+    try {
+        return { ok: true, value: normalizeHubUrl(trimmed) }
+    } catch {
+        return { ok: false, error: 'Hub URL must have a valid base path and no credentials, query or fragment' }
+    }
 }
 
 function getServerFromUrlParams(): string | null {
@@ -86,7 +92,7 @@ export function useServerUrl(): {
         return readStoredServerUrl()
     })
 
-    const fallbackOrigin = typeof window !== 'undefined' ? window.location.origin : ''
+    const fallbackOrigin = typeof window !== 'undefined' ? window.location.origin + appBasePath : ''
     const baseUrl = useMemo(() => serverUrl ?? fallbackOrigin, [serverUrl, fallbackOrigin])
 
     const setServerUrl = useCallback((input: string): ServerUrlResult => {

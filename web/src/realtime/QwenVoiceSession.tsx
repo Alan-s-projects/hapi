@@ -137,7 +137,7 @@ class QwenVoiceSessionImpl implements VoiceSession {
         // Connect via Hub WebSocket proxy (DashScope requires Authorization header,
         // which browser WebSocket API doesn't support)
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-        const defaultProxyUrl = `${protocol}//${window.location.host}/api/voice/qwen-ws`
+        const defaultProxyUrl = `${protocol}//${window.location.host}${import.meta.env.BASE_URL}api/voice/qwen-ws`
         const proxyUrl = state.wsBaseUrl || defaultProxyUrl
         const authToken = this.api.getAuthToken() || ''
         const separator = proxyUrl.includes('?') ? '&' : '?'

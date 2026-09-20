@@ -6,6 +6,7 @@
     "main": "./src/index.ts",
     "types": "./src/index.ts",
     "exports": {
+        "./url": "./src/url.ts",
         ".": "./src/index.ts",
         "./apiTypes": "./src/apiTypes.ts",
         "./messages": "./src/messages.ts",

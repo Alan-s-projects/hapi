@@ -1,3 +1,4 @@
+import { appPathname } from '@/lib/basePath'
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Outlet, useLocation, useMatchRoute, useRouter } from '@tanstack/react-router'
 import { useQueryClient } from '@tanstack/react-query'
@@ -72,7 +73,7 @@ function AppInner() {
     const { token, api, isLoading: isAuthLoading, error: authError, needsBinding, bind } = useAuth(authSource, baseUrl)
     const [titleSuggestionAvailable, setTitleSuggestionAvailable] = useState(false)
     const goBack = useAppGoBack()
-    const pathname = useLocation({ select: (location) => location.pathname })
+    const pathname = useLocation({ select: (location) => appPathname(location.pathname) })
     const matchRoute = useMatchRoute()
     const router = useRouter()
     const { addToast } = useToast()

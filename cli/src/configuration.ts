@@ -81,7 +81,7 @@ class Configuration {
 
     constructor() {
         // Server configuration
-        this._apiUrl = process.env.HAPI_API_URL || 'http://localhost:3006'
+        this._apiUrl = (process.env.HAPI_API_URL || 'http://localhost:3006').replace(/\/+$/, '')
         this._cliApiToken = process.env.CLI_API_TOKEN || ''
         this._extraHeaders = parseExtraHeaders(process.env.HAPI_EXTRA_HEADERS_JSON)
 
@@ -116,7 +116,7 @@ class Configuration {
     }
 
     _setApiUrl(url: string): void {
-        this._apiUrl = url
+        this._apiUrl = url.replace(/\/+$/, '')
     }
 
     get cliApiToken(): string {

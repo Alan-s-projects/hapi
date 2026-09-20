@@ -1,4 +1,5 @@
 import { Hono } from 'hono'
+import { hubBasePath, routeBasePath } from './basePath'
 import { compress } from 'hono/compress'
 import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
@@ -441,6 +442,7 @@ export async function startWebServer(options: {
 
     const configuration = getConfiguration()
     const socketHandler = options.socketEngine.handler()
+    const basePath = hubBasePath()
 
     // Wrap socket.io websocket handler to also support Gemini/Qwen proxy connections
     const originalWsHandler = socketHandler.websocket
@@ -493,7 +495,9 @@ export async function startWebServer(options: {
             }
         },
         fetch: async (req: Request, server: { upgrade: (req: Request, opts?: unknown) => boolean }) => {
-            const url = new URL(req.url)
+            const routed = routeBasePath(req, basePath)
+            if (routed instanceof Response) return routed
+            const { url } = routed
             if (url.pathname.startsWith('/socket.io/')) {
                 return socketHandler.fetch(req, server as never)
             }
@@ -551,7 +555,7 @@ export async function startWebServer(options: {
                 return undefined as unknown as Response
             }
 
-            return app.fetch(req)
+            return app.fetch(routed.request)
         }
     })
 

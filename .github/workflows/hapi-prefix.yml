@@ -1,0 +1,29 @@
+name: HAPI prefix build
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/hapi-prefix]
+permissions:
+  contents: read
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      HAPI_BUILD_DIR: /tmp/hapi-build
+      VITE_BASE_URL: /
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
+      - run: bun install --frozen-lockfile
+      - run: bun typecheck
+      - run: bun run gen:fixtures && git diff --exit-code -- shared/fixtures
+      - run: bun run test
+      - run: bun deploy/alan/build.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hapi-linux-amd64-prefix
+          path: /tmp/hapi-build/bun-linux-x64-baseline/
+          retention-days: 14

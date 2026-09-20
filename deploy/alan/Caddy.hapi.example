@@ -1,0 +1,23 @@
+# Insert INSIDE the existing HTTPS site, before its catch-all handler, only
+# after enrollment, VM hardening approval and authentication/expiry testing.
+# Caddy must join hapi-gateway_front; preserve its existing network and volumes.
+# Do not strip /hapi: the patched application consumes its own base path.
+@hapi_auth path /auth /auth/*
+handle @hapi_auth {
+    reverse_proxy hapi-authelia:9091
+}
+@hapi_app path /hapi /hapi/*
+handle @hapi_app {
+    forward_auth hapi-authelia:9091 {
+        uri /api/authz/forward-auth
+        copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
+    }
+    reverse_proxy hapi-frps:13006 {
+        flush_interval -1
+        stream_timeout 1h
+        stream_close_delay 5m
+    }
+}
+# Required before activation: redact Authorization, Cookie and token query
+# parameters in the site's access-log encoder, and verify MFA-expiry behavior
+# for fetch/SSE/WebSocket clients. This fragment is not a full site config.

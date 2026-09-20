@@ -1,0 +1,8 @@
+.git
+**/node_modules
+**/secrets
+**/backups
+**/*.local.*
+**/*.log
+test-results
+playwright-report

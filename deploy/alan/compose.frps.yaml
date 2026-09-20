@@ -1,0 +1,26 @@
+name: hapi-gateway
+services:
+  frps:
+    image: alan-frp:0.71.0
+    container_name: hapi-frps
+    entrypoint: ["/usr/local/bin/frps"]
+    command: ["-c", "/etc/frp/frps.toml"]
+    restart: unless-stopped
+    read_only: true
+    user: "65532:65532"
+    mem_limit: 128m
+    cpus: 0.5
+    pids_limit: 64
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    ports: ["7000:7000"]
+    volumes:
+      - ./frps.toml:/etc/frp/frps.toml:ro
+      - ./server-secrets:/run/secrets:ro
+    networks: [front]
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+networks:
+  front:
+    name: hapi-gateway_front

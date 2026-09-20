@@ -4,6 +4,7 @@ import { jwtVerify } from 'jose'
 import { z } from 'zod'
 import type { Store } from '../store'
 import { getConfiguration } from '../configuration'
+import { hubBasePath } from '../web/basePath'
 import { constantTimeEquals } from '../utils/crypto'
 import { parseAccessToken } from '../utils/accessToken'
 import { registerCliHandlers } from './handlers/cli'
@@ -69,7 +70,7 @@ export function createSocketServer(deps: SocketServerDeps): {
     })
 
     const engine = new Engine({
-        path: '/socket.io/',
+        path: `${hubBasePath()}/socket.io/`,
         cors: corsOptions,
         maxHttpBufferSize: SOCKET_MAX_HTTP_BUFFER_SIZE,
         allowRequest: async (req) => {

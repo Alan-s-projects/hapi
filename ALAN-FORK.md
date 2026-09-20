@@ -11,12 +11,17 @@ and its AGPL-3.0 license are retained.
 - Starting release: `v0.30.7`
 - Starting commit: `0239edf38e2da653d662f31039e24ccea04c7837`
 - Existing deployment: unmodified HAPI 0.30.7 with official Codex CLI 0.155.1.
-- This initial fork commit documents the work only. Prefix changes, a custom
-  image, frp deployment, public routing and MFA are **not implemented yet**.
+- Prefix support, regression tests, Docker build tooling, and gateway templates
+  are implemented on this branch. A local preview and private mutual-TLS frp
+  transport have been exercised. Public Caddy routing, owner MFA enrollment,
+  and production cutover are **not activated yet**.
 
 Keep `main` aligned with upstream. Build and verify the prefix patch on this
 branch before replacing a running image. Do not claim a release is deployable
 until its actual image and end-to-end checks have passed.
+
+See [the deployment runbook](deploy/alan/README.md) for the build contract,
+checks, security controls, and the remaining public-launch gates.
 
 ## Prefix-aware build scope
 

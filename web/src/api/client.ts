@@ -1,3 +1,4 @@
+import { hubUrl } from '@hapi/protocol/url'
 import type {
     AttachmentMetadata,
     AuthResponse,
@@ -166,7 +167,7 @@ export class ApiClient {
             return path
         }
         try {
-            return new URL(path, this.baseUrl).toString()
+            return hubUrl(this.baseUrl, path)
         } catch {
             return path
         }

@@ -1,0 +1,12 @@
+# Merge this format into the existing site's log block. Do not duplicate it.
+format filter {
+    wrap json
+    fields {
+        request>headers>Authorization delete
+        request>headers>Cookie delete
+        request>uri query {
+            delete token
+            delete access_token
+        }
+    }
+}

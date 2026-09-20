@@ -1,3 +1,4 @@
+import { appPathname } from '@/lib/basePath'
 import { Outlet, useLocation, useNavigate } from '@tanstack/react-router'
 import { useTranslation } from '@/lib/use-translation'
 import { useAppGoBack } from '@/hooks/useAppGoBack'
@@ -16,7 +17,7 @@ export default function SettingsLayout() {
     const { t } = useTranslation()
     const goBack = useAppGoBack()
     const navigate = useNavigate()
-    const pathname = useLocation({ select: (location) => location.pathname })
+    const pathname = useLocation({ select: (location) => appPathname(location.pathname) })
     const category = getSettingsCategory(pathname)
     const mobileTitleKey = pathname === '/settings/voice/voices'
         ? 'settings.voice.voice'

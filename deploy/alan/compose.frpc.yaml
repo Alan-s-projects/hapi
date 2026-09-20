@@ -1,0 +1,23 @@
+name: hapi-tunnel
+services:
+  frpc:
+    image: alan-frp:0.71.0
+    container_name: hapi-frpc
+    command: ["-c", "/etc/frp/frpc.toml"]
+    restart: unless-stopped
+    user: "65532:65532"
+    read_only: true
+    mem_limit: 128m
+    pids_limit: 64
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    volumes:
+      - ./config:/etc/frp:ro
+      - ./client-secrets:/run/secrets:ro
+    networks: [backend]
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+networks:
+  backend:
+    name: hapi-tunnel_backend

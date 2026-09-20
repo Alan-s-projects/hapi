@@ -3,6 +3,7 @@
  */
 
 import { io, type Socket } from 'socket.io-client'
+import { socketEndpoint } from '@hapi/protocol/url'
 import { readdir, stat } from 'node:fs/promises'
 import { join } from 'node:path'
 import { logger } from '@/ui/logger'
@@ -518,14 +519,15 @@ export class ApiMachineClient {
     }
 
     connect(): void {
-        this.socket = io(`${configuration.apiUrl}/cli`, {
+        const endpoint = socketEndpoint(configuration.apiUrl)
+        this.socket = io(`${endpoint.origin}/cli`, {
             transports: ['websocket'],
             auth: {
                 token: this.token,
                 clientType: 'machine-scoped' as const,
                 machineId: this.machine.id
             },
-            path: '/socket.io/',
+            path: endpoint.path,
             reconnection: true,
             reconnectionDelay: 1000,
             reconnectionDelayMax: 5000,

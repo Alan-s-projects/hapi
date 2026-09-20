@@ -1,0 +1,11 @@
+# Syntax/provisioning check only; NEVER load this as the live Caddy configuration.
+:8080 {
+    log {
+        output stdout
+        import /tmp/hapi-prefix-check/Caddy.logging.example
+    }
+    import /tmp/hapi-prefix-check/Caddy.hapi.example
+    handle {
+        respond 404
+    }
+}
